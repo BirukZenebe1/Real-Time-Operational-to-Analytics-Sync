@@ -17,7 +17,6 @@ spark = SparkSession.builder \
     .master(SPARK_MASTER) \
     .getOrCreate()
 
-# Define schema
 schema = StructType([
     StructField("ride_id", IntegerType()),
     StructField("driver_id", IntegerType()),
@@ -27,7 +26,6 @@ schema = StructType([
     StructField("status", StringType())
 ])
 
-# Read from Kafka
 df = spark.readStream \
     .format("kafka") \
     .option("kafka.bootstrap.servers", KAFKA_BOOTSTRAP_SERVERS) \
@@ -35,19 +33,17 @@ df = spark.readStream \
     .option("startingOffsets", STARTING_OFFSETS) \
     .load()
 
-# Deserialize
+
 df_parsed = df.selectExpr("CAST(value AS STRING) as json") \
     .select(from_json("json", schema).alias("data")) \
     .select("data.*")
 
-# Data quality filter
 df_clean = df_parsed.filter(
     (col("ride_id").isNotNull()) &
     (col("price") > 0) &
     (col("status").isin("completed", "cancelled"))
 )
 
-# Write to S3 or local folder
 query = df_clean.writeStream \
     .format("parquet") \
     .option("path", OUTPUT_PATH) \
