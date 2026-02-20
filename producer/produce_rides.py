@@ -15,7 +15,6 @@ POSTGRES_DB = os.getenv("POSTGRES_DB", "rides_db")
 POSTGRES_USER = os.getenv("POSTGRES_USER", "admin")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "admin")
 
-# Defaults match local Docker; set env vars for AWS endpoints.
 producer = KafkaProducer(
     bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
     value_serializer=lambda v: json.dumps(v).encode("utf-8"),
